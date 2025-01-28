@@ -40,7 +40,7 @@ variable "is_released" {
 data "amazon-ami" "al2023" {
   filters = {
     architecture        = var.arch
-    name                = "al2023-ami-minimal-*"
+    name                = "Deep Learning AMI Neuron (Amazon Linux 2023) 20250115"
     virtualization-type = "hvm"
   }
   most_recent = true
@@ -50,7 +50,6 @@ data "amazon-ami" "al2023" {
 
 source "amazon-ebs" "elastic-ci-stack-ami" {
   ami_description                           = "Buildkite Elastic Stack (Amazon Linux 2023 w/ docker)"
-  ami_groups                                = ["all"]
   ami_name                                  = "buildkite-stack-linux-${var.arch}-${replace(timestamp(), ":", "-")}"
   instance_type                             = var.instance_type
   region                                    = var.region
@@ -62,7 +61,7 @@ source "amazon-ebs" "elastic-ci-stack-ami" {
   launch_block_device_mappings {
     volume_type           = "gp3"    
     device_name = "/dev/xvda"
-    volume_size = 10
+    volume_size = 512
     delete_on_termination = true
   }
 
