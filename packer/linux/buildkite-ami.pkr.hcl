@@ -123,6 +123,10 @@ build {
   }
 
   provisioner "shell" {
+    script = "scripts/add-buildkite-hooks.sh"
+  }
+
+  provisioner "shell" {
     script = "scripts/cleanup.sh"
   }
 }
