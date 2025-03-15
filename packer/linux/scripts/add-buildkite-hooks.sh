@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to add environment hooks for AWS SSM and ECR Plugins
+# Script to add environment and pre-exit hooks for AWS SSM and ECR Plugins
 set -euo pipefail
 
 # Create directories
@@ -16,6 +16,14 @@ set -euo pipefail
 echo "AWS SSM Plugin environment hook loaded"
 EOF
 
+# Create SSM pre-exit hook
+cat << 'EOF' | sudo tee "${SSM_HOOKS_DIR}/pre-exit"
+#!/bin/bash
+set -euo pipefail
+
+echo "AWS SSM Plugin pre-exit hook loaded"
+EOF
+
 # Create ECR environment hook
 cat << 'EOF' | sudo tee "${ECR_HOOKS_DIR}/environment"
 #!/bin/bash
@@ -29,14 +37,23 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" == "1" ]]; then
 fi
 EOF
 
+# Create ECR pre-exit hook
+cat << 'EOF' | sudo tee "${ECR_HOOKS_DIR}/pre-exit"
+#!/bin/bash
+set -euo pipefail
+
+echo "AWS ECR Plugin pre-exit hook loaded"
+EOF
+
 # Set permissions
-sudo chmod +x "${SSM_HOOKS_DIR}/environment" "${ECR_HOOKS_DIR}/environment"
+sudo chmod +x "${SSM_HOOKS_DIR}/environment" "${SSM_HOOKS_DIR}/pre-exit" \
+              "${ECR_HOOKS_DIR}/environment" "${ECR_HOOKS_DIR}/pre-exit"
 sudo chown -R buildkite-agent:buildkite-agent "${SSM_HOOKS_DIR}" "${ECR_HOOKS_DIR}"
 
 # Restart buildkite-agent
 sudo systemctl restart buildkite-agent
 
 echo "✅ Hooks created and configured:"
-echo "   - SSM: ${SSM_HOOKS_DIR}/environment"
-echo "   - ECR: ${ECR_HOOKS_DIR}/environment"
+echo "   - SSM: ${SSM_HOOKS_DIR}/{environment,pre-exit}"
+echo "   - ECR: ${ECR_HOOKS_DIR}/{environment,pre-exit}"
 
