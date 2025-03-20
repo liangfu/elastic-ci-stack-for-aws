@@ -58,6 +58,14 @@ source "amazon-ebs" "elastic-ci-stack-ami" {
   ssh_clear_authorized_keys = true
   temporary_security_group_source_public_ip = true
 
+  # enforces imdsv2 support on the running instance being provisioned by Packer
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens = "required"
+    http_put_response_hop_limit = 1
+  }
+  imds_support  = "v2.0" # enforces imdsv2 support on the resulting AMI
+
   launch_block_device_mappings {
     volume_type           = "gp3"    
     device_name = "/dev/xvda"
